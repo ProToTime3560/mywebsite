@@ -1,3 +1,4 @@
 using node.js for register, noticeboard, file upload, download, share
 
-DataBase: mysql
+UI: using Bootstrap
+DataBase: using mysql
