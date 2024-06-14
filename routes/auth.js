@@ -295,7 +295,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     const fileType = path.extname(file.originalname).slice(1); // 파일 확장자 추출
     if (file) {
         try {
-            await db.query('INSERT INTO uploaded_files (user_id, stored_filename, original_filename, file_path, file_type) VALUES (?, ?, ?, "", ?)', [userId, file.filename, file.originalname, fileType]);
+            await db.query('INSERT INTO uploaded_files (user_id, stored_filename, original_filename, file_type) VALUES (?, ?, ?, ?)', [userId, file.filename, file.originalname, fileType]);
             res.json({ success: true });
         } catch (err) {
             console.error(err);
@@ -408,6 +408,33 @@ router.get('/shared-files', async (req, res) => {
         res.status(500).send('Server error');
     }
 });
+
+//파일에 대한 공유된 사용자명단 조회
+router.get('/get_sharedID_info/:fileId', async (req, res) => {
+    const fileId = req.params.fileId;
+
+    try {
+        const [results] = await db.query('SELECT shared_user_id FROM file_shares WHERE file_id = ?', [fileId]);
+        res.json(results);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server error');
+    }
+});
+
+//공유된 사용자 제거
+router.delete('/shareid-delete', async (req, res) => {
+    const { fileId, sharedUserId } = req.body;
+
+    try {
+        await db.query('DELETE FROM file_shares WHERE file_id = ? AND shared_user_id = ?', [fileId, sharedUserId]);
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server error');
+    }
+});
+
 
 //공유삭제
 router.delete('/remove-share/:fileId', async (req, res) => {

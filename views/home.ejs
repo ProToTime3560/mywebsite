@@ -52,6 +52,8 @@
             </div>
             <div class="modal-body">
                 <h5 id="modalFileName" class="mb-3"></h5>
+                <p>현재 공유된 사용자 목록:</p>
+                <div id="sharedUsersList" class="mb-3"></div>
                 <form id="share-form">
                     <div class="form-group">
                         <label for="shareUserId">공유할 사용자 ID</label>
@@ -63,6 +65,7 @@
         </div>
     </div>
 </div>
+
 
 <!-- jQuery와 Popper.js를 포함한 Bootstrap JS 로드 -->
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -171,8 +174,55 @@
         currentFileId = fileId;
         currentFileName = fileName;
         modalFileName.textContent = `파일명: ${fileName}`;
+        document.getElementById('shareUserId').value = ''; 
         $('#shareModal').modal('show');
+        loadSharedUsers(fileId);
     }
+
+    //공유된 사용자들 목록 조회
+    function loadSharedUsers(fileId) {
+        fetch(`/get_sharedID_info/${fileId}`)
+            .then(response => response.json())
+            .then(data => {
+                const sharedUsersList = document.getElementById('sharedUsersList');
+                sharedUsersList.innerHTML = '';
+    
+                if (data.length > 0) {
+                    data.forEach(user => {
+                        const userItem = document.createElement('div');
+                        userItem.className = 'shared-user-item';
+                        userItem.innerHTML = `
+                            <span>${user.shared_user_id}</span>
+                            <button class="btn btn-danger btn-sm ml-2" onclick="removeSharedUser('${user.shared_user_id}')">X</button>
+                        `;
+                        sharedUsersList.appendChild(userItem);
+                    });
+                } else {
+                    sharedUsersList.innerHTML = '<p>현재 공유된 사용자가 없습니다.</p>';
+                }
+            });
+    }
+
+    //공유된 사용자 삭제
+    function removeSharedUser(sharedUserId) {
+        fetch('/shareid-delete', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ fileId: currentFileId, sharedUserId })
+        }).then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  loadSharedUsers(currentFileId); // 사용자 목록 갱신
+              } else {
+                  alert('사용자 삭제에 실패했습니다.');
+              }
+          }).catch(error => {
+              console.error('Error:', error);
+          });
+    }
+
 
     shareForm.addEventListener('submit', function(event) {
         event.preventDefault();
