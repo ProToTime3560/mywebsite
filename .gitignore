@@ -1,0 +1,11 @@
+# Node.js 관련 파일/디렉토리 무시
+node_modules/
+npm-debug.log
+
+# 환경 설정 파일 무시
+.env
+
+# 기타 불필요한 파일/디렉토리 무시
+.DS_Store
+.idea/
+.vscode/

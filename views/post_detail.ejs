@@ -1,0 +1,87 @@
+<%- include('layout', { user: user }) %>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h2 class="text-center"><%= post.title %></h2>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <p><%= post.content %></p>
+                    <small class="text-muted">작성자: <%= post.author_id %>, 작성일: <%= new Date(post.createdAt).toLocaleString() %></small>
+                    <% if (user && user.user_id === post.author_id) { %>
+                        <button id="delete-post-btn" class="btn btn-danger float-right">삭제</button>
+                    <% } %>
+                </div>
+            </div>
+            <h5>댓글</h5>
+            <ul class="list-group mb-4">
+                <% comments.forEach(comment => { %>
+                    <li class="list-group-item">
+                        <p><%= comment.content %></p>
+                        <small class="text-muted">작성자: <%= comment.author_id %>, 작성일: <%= new Date(comment.createdAt).toLocaleString() %></small>
+                    </li>
+                <% }) %>
+            </ul>
+            <form id="comment-form">
+                <div class="form-group">
+                    <label for="content">댓글 작성</label>
+                    <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">작성</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const commentForm = document.getElementById('comment-form');
+    commentForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const formData = new FormData(commentForm);
+        const data = {
+            content: formData.get('content')
+        };
+
+        try {
+            const response = await fetch('/noticeboard/posts/<%= post.id %>/comments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            if (result.success) {
+                alert('댓글이 작성되었습니다.');
+                location.reload();
+            } else {
+                alert('댓글 작성에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    });
+
+    <% if (user && user.user_id === post.author_id) { %>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('delete-post-btn').addEventListener('click', async function() {
+            if (confirm('정말로 삭제하시겠습니까?')) {
+                try {
+                    const response = await fetch('/noticeboard/posts/<%= post.id %>', {
+                        method: 'DELETE'
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('게시글이 삭제되었습니다.');
+                        window.location.href = '/noticeboard';
+                    } else {
+                        alert('게시글 삭제에 실패했습니다.');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            }
+        });
+    });
+    <% } %>
+</script>

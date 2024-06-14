@@ -1,0 +1,16 @@
+<%- include('layout', { user: user }) %>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h2 class="text-center">대시보드</h2>
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5 class="card-title">환영합니다, <%= user.user_id %>님!</h5>
+                    <p class="card-text">이메일: <%= user.user_email %></p>
+                    <a href="/logout" class="btn btn-primary">로그아웃</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
